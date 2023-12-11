@@ -280,7 +280,7 @@ fn part_two(field: &Field) -> usize {
             dir = match field.get(&pos) {
                 Some(tile) => match tile {
                     Tile::Start => {
-                        start_emit = !((s == dir) && (s == East || s == West));
+                        start_emit = s == North || dir == South;
                         break 'outer;
                     }
                     _ => match tile.goes_to(dir) {
@@ -300,26 +300,21 @@ fn part_two(field: &Field) -> usize {
         height: field.height,
     };
 
-    'pos: for pos in &loo {
+    for pos in &loo {
         let tile1 = field.get(&pos).unwrap();
         if !match tile1 {
-            Tile::Horizontal => false,
+            Tile::Vertical => true,
+            Tile::NorthEast => true,
+            Tile::NorthWest => true,
             Tile::Empty => panic!("Empty tile can't be part of loop"),
             Tile::Start => start_emit,
-            _ => true,
+            _ => false,
         } {
             continue;
         }
 
-        let on_border = (*tile1 == Tile::NorthEast) || (*tile1 == Tile::SouthEast);
         for x in pos.x + 1..field.width as isize {
             let new_pos = (x, pos.y).into();
-            if on_border {
-                let tile2 = field.get(&new_pos).unwrap();
-                if (*tile2 == Tile::NorthWest && *tile1 == Tile::SouthEast) || (*tile2 == Tile::SouthWest && *tile1 == Tile::NorthEast) {
-                    continue 'pos;
-                }
-            }
             let p = m.get_mut(&new_pos).unwrap();
             *p = !*p;
         }
